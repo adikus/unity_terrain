@@ -33,7 +33,7 @@ public class MouseControl : MonoBehaviour {
 	    _debugText.text = "Tile: " + tile.X + ", " + tile.Y + ", Height: " + tile.NW.y;
 	    UpdateOverlayMesh(tile);
 
-	    if (Input.GetMouseButtonDown(0))
+	    if (Input.GetMouseButtonDown(1))
 	    {
 	        var heightList = new List<float>(new [] { tile.NW.y, tile.NE.y, tile.SW.y, tile.SE.y }) ;
 	        var min = heightList.Min();

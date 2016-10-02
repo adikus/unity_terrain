@@ -16,6 +16,10 @@ namespace Terrain
         public Vector3 SW;
         public Vector3 SE;
 
+        public float Color;
+        public float Color2;
+        public float Color3;
+
         public int X;
         public int Y;
 
@@ -118,6 +122,7 @@ namespace Terrain
                 var uvy = point.z - y;
 
                 var triangleHeight = triangle.Select(i => i.y).Max();
+                //var colorIndex = Color2;
                 var colorIndex = _map.Colors.GetColorIndex(triangleHeight);
 
                 uvs.Add(new Vector2(_colorSpacing * (colorIndex + uvx), uvy));
@@ -133,6 +138,8 @@ namespace Terrain
 
         public void UpdateHeights(float nw, float ne, float sw, float se, bool affectNeighbours)
         {
+            _dirty = true;
+
             NW.y = nw;
             NE.y = ne;
             SW.y = sw;
@@ -192,6 +199,18 @@ namespace Terrain
         public bool Dummy()
         {
             return NW.y <= -100;
+        }
+
+        private bool _dirty = true;
+        private float _averageHeight;
+        public float AverageHeight()
+        {
+            if (_dirty)
+            {
+                _averageHeight = (NW.y + NE.y + SW.y + SE.y) / 4;
+                _dirty = false;
+            }
+            return _averageHeight;
         }
     }
 }

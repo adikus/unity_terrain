@@ -9,6 +9,10 @@ public class TerrainGeneration : MonoBehaviour
     public Map Map;
     public GameObject TerrainPrefab;
     public GameObject WaterPlane;
+
+    public GameObject CityPrefab;
+    public GameObject TownPrefab;
+
     public Vector3 Offset;
 
     public int XChunks;
@@ -22,14 +26,14 @@ public class TerrainGeneration : MonoBehaviour
 
     public void Awake()
     {
-        const int width = 150;
-        const int height = 150;
+        const int width = 200;
+        const int height = 200;
         const int landPercentage = 90;
-        const string seed = "Test Seed 5";
+        const string seed = "Test Seed 1";
 
         WaterPlane.transform.localScale = new Vector3((float) width / 10, 1, (float) height / 10);
 
-        Map = new Map(width, height, landPercentage, "Test Seed 1");
+        Map = new Map(width, height, landPercentage, seed);
 //        for (var i = 21; i <= 50; i++)
 //        {
 //            Map = new Map(width, height, landPercentage, "Test Seed "+i);
@@ -48,6 +52,9 @@ public class TerrainGeneration : MonoBehaviour
 
         Debug.Log("Chunks: " + XChunks + " x " + YChunks);
 
+        var stopwatch = new System.Diagnostics.Stopwatch();
+
+        stopwatch.Start();
         for (var i = 0; i < Map.Width; i += ChunkSize)
         {
             for (var j = 0; j < Map.Height; j += ChunkSize)
@@ -57,6 +64,25 @@ public class TerrainGeneration : MonoBehaviour
                 terrainObjects[TerrainIndex(i, j)] = terrainObject;
                 UpdateTerrain(terrainObject, i, Math.Min(i + ChunkSize - 1, Map.Width - 1), j, Math.Min(j + ChunkSize - 1, Map.Height - 1));
             }
+        }
+        stopwatch.Stop();
+        Debug.Log("UpdateTerrain: " + stopwatch.ElapsedMilliseconds + " ms");
+        stopwatch.Reset();
+
+        var cubeOffset = new Vector3(0.5f, 0.5f, 0.5f);
+
+        foreach (var city in Map.Cities)
+        {
+            var tile = Map.GetTile((int) city.x, (int) city.y);
+            var cityObject = Instantiate(CityPrefab);
+            cityObject.transform.position = Offset + cubeOffset + new Vector3(city.x, tile.AverageHeight()/2, city.y);
+        }
+
+        foreach (var town in Map.Towns)
+        {
+            var tile = Map.GetTile((int) town.x, (int) town.y);
+            var townObject = Instantiate(TownPrefab);
+            townObject.transform.position = Offset + cubeOffset + new Vector3(town.x, tile.AverageHeight()/2, town.y);
         }
     }
 
@@ -130,9 +156,7 @@ public class TerrainGeneration : MonoBehaviour
 
         foreach (var index in terrainIndexes)
         {
-            Debug.Log(index);
             var position = TerrainPosition(index);
-            Debug.Log(position);
             var x1 = (int) position.x;
             var y1 = (int) position.y;
             var x2 = Math.Min(x1 + ChunkSize - 1, Map.Width - 1);
