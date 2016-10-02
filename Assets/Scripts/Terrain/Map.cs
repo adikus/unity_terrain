@@ -19,6 +19,7 @@ namespace Terrain
 
         public readonly int Width;
         public readonly int Height;
+        public readonly string Seed;
 
         private readonly float _landPercentage;
 
@@ -29,6 +30,7 @@ namespace Terrain
         {
             Width = width;
             Height = height;
+            Seed = seed;
 
             _landPercentage = landPercentage;
 
@@ -54,54 +56,9 @@ namespace Terrain
 
             Colors = new Colors((int) ApplyHeightCurve(minHeight), (int) ApplyHeightCurve(maxHeight));
 
-            #region Save heightmap to PNG
-
-//            var max = _histogram.Keys.Max();
-//            var min = _histogram.Keys.Min();
-//            var texture = new Texture2D(width + 1, height + 1, TextureFormat.RGB24, false);
-//            var textureColor = new Texture2D(width + 1, height + 1, TextureFormat.RGB24, false);
-//            var textureFull = new Texture2D(width + 1, height + 1, TextureFormat.RGB24, false);
-//            for (var i = 0; i <= Width; i++)
-//            {
-//                for (var j = 0; j <= Height; j++)
-//                {
-//                    var hh = GetHeight(i, j);
-//                    var color = Math.Max(0, hh / max);
-//                    var colorFull = Math.Max(0, (hh - min) / (max - min));
-//                    var colorIndex = Colors.GetColorIndex(hh);
-//                    texture.SetPixel(i, j, new Color(color, color, color));
-//                    textureColor.SetPixel(i, j, Colors.BorderedColors[colorIndex]);
-//                    textureFull.SetPixel(i, j, new Color(colorFull, colorFull, colorFull));
-//                }
-//            }
-//            texture.Apply();
-//            textureColor.Apply();
-//            textureFull.Apply();
-//            var bytes = texture.EncodeToPNG();
-//            var bytesColor = textureColor.EncodeToPNG();
-//            var bytesFull = textureFull.EncodeToPNG();
-//            Object.Destroy(texture);
-//            Object.Destroy(textureColor);
-//            Object.Destroy(textureFull);
-//            var heightMapName = seed + "-" + Width + "-" + Height;
-//            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName + ".png", bytes);
-//            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName +"-Color.png", bytesColor);
-//            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName + "-Full.png", bytesFull);
-
-            #endregion
+            //SaveHeightMap();
 
             CreateTiles();
-
-            #region Random tile height - debug stile side rendering
-
-            var tile = Tiles[new System.Random().Next(Width - 1), new System.Random().Next(Height - 1)];
-            var h = new System.Random().Next(1, 20);
-            tile.NW.y = h;
-            tile.NE.y = h;
-            tile.SW.y = h;
-            tile.SE.y = h;
-
-            #endregion
 
             InitTiles();
 
@@ -224,6 +181,41 @@ namespace Terrain
                     Tiles[i, j].ComputeMesh();
                 }
             }
+        }
+
+        private void SaveHeightMap()
+        {
+            var max = _histogram.Keys.Max();
+            var min = _histogram.Keys.Min();
+            var texture = new Texture2D(Width + 1, Height + 1, TextureFormat.RGB24, false);
+            var textureColor = new Texture2D(Width + 1, Height + 1, TextureFormat.RGB24, false);
+            var textureFull = new Texture2D(Width + 1, Height + 1, TextureFormat.RGB24, false);
+            for (var i = 0; i <= Width; i++)
+            {
+                for (var j = 0; j <= Height; j++)
+                {
+                    var hh = GetHeight(i, j);
+                    var color = Math.Max(0, hh / max);
+                    var colorFull = Math.Max(0, (hh - min) / (max - min));
+                    var colorIndex = Colors.GetColorIndex(hh);
+                    texture.SetPixel(i, j, new Color(color, color, color));
+                    textureColor.SetPixel(i, j, Colors.BorderedColors[colorIndex]);
+                    textureFull.SetPixel(i, j, new Color(colorFull, colorFull, colorFull));
+                }
+            }
+            texture.Apply();
+            textureColor.Apply();
+            textureFull.Apply();
+            var bytes = texture.EncodeToPNG();
+            var bytesColor = textureColor.EncodeToPNG();
+            var bytesFull = textureFull.EncodeToPNG();
+            Object.Destroy(texture);
+            Object.Destroy(textureColor);
+            Object.Destroy(textureFull);
+            var heightMapName = Seed + "-" + Width + "-" + Height;
+            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName + ".png", bytes);
+            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName +"-Color.png", bytesColor);
+            File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName + "-Full.png", bytesFull);
         }
     }
 }
