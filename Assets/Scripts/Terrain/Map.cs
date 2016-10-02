@@ -70,8 +70,8 @@ namespace Terrain
             var minHeight = (_histogram.Keys.Min() + HeightOffset) / GlobalScale;
             var maxHeight = (_histogram.Keys.Max() + HeightOffset) / GlobalScale;
 
-            //Colors = new Colors((int) ApplyHeightCurve(minHeight), (int) ApplyHeightCurve(maxHeight));
-            Colors = new Colors(-100, 100);
+            Colors = new Colors((int) ApplyHeightCurve(minHeight), (int) ApplyHeightCurve(maxHeight));
+            //Colors = new Colors(-100, 100);
 
             //SaveHeightMap();
 
