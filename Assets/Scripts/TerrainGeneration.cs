@@ -26,8 +26,8 @@ public class TerrainGeneration : MonoBehaviour
 
     public void Awake()
     {
-        const int width = 200;
-        const int height = 200;
+        const int width = 500;
+        const int height = 500;
         const int landPercentage = 90;
         const string seed = "Test Seed 1";
 
@@ -73,16 +73,16 @@ public class TerrainGeneration : MonoBehaviour
 
         foreach (var city in Map.Cities)
         {
-            var tile = Map.GetTile((int) city.x, (int) city.y);
+            var tile = Map.GetTile(city.X, city.Y);
             var cityObject = Instantiate(CityPrefab);
-            cityObject.transform.position = Offset + cubeOffset + new Vector3(city.x, tile.AverageHeight()/2, city.y);
+            cityObject.transform.position = Offset + cubeOffset + new Vector3(city.X, tile.AverageHeight()/2, city.Y);
         }
 
         foreach (var town in Map.Towns)
         {
-            var tile = Map.GetTile((int) town.x, (int) town.y);
+            var tile = Map.GetTile(town.X, town.Y);
             var townObject = Instantiate(TownPrefab);
-            townObject.transform.position = Offset + cubeOffset + new Vector3(town.x, tile.AverageHeight()/2, town.y);
+            townObject.transform.position = Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y);
         }
     }
 

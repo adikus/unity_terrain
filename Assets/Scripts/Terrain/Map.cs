@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using YamlDotNet.Serialization;
 
 namespace Terrain
 {
@@ -26,8 +27,8 @@ namespace Terrain
         public float GlobalScale;
         public int HeightOffset;
 
-        public List<Vector2> Cities;
-        public List<Vector2> Towns;
+        public List<Point2> Cities;
+        public List<Point2> Towns;
 
         public Map(int width , int height, int landPercentage, string seed)
         {
@@ -39,8 +40,8 @@ namespace Terrain
 
             _layers = new List<Layer>();
 
-            Cities = new List<Vector2>();
-            Towns = new List<Vector2>();
+            Cities = new List<Point2>();
+            Towns = new List<Point2>();
 
             var size = 1;
             var scale = 4000f;
@@ -112,10 +113,14 @@ namespace Terrain
             return ApplyHeightCurve((_grid[x, y] + HeightOffset) / GlobalScale);
         }
 
+        internal bool WithinTileBounds(int x, int y)
+        {
+            return !(x < 0 || y < 0 || x >= Width || y >= Width);
+        }
+
         internal Tile GetTile(int x, int y)
         {
-            if (x < 0 || y < 0 || x >= Width || y >= Width) return new Tile(this, x, y, -100, -100, -100, -100);
-            return Tiles[x, y];
+            return !WithinTileBounds(x, y) ? new Tile(this, x, y, -100, -100, -100, -100) : Tiles[x, y];
         }
 
         internal void MergeLayers()
@@ -228,6 +233,7 @@ namespace Terrain
                     {
                         for (var jj = j - kernelSize; jj < j + kernelSize; jj++)
                         {
+                            if (!WithinTileBounds(ii, jj)) continue;
                             var t = GetTile(ii, jj);
                             memo = iterator(tile, t, memo);
                         }
@@ -239,11 +245,23 @@ namespace Terrain
 
         private void LocationIDConvolution()
         {
+            var saveFileName = Application.persistentDataPath + "/mapObjects-" + Seed + "-" + Width + "-" + Height + "-" +
+                               MapObjects.Version + ".yml";
+
+            if (File.Exists(saveFileName))
+            {
+                var reader = new StreamReader(saveFileName);
+                var deserializer = new Deserializer();
+                var mapObjects = deserializer.Deserialize<MapObjects>(reader);
+                Cities = mapObjects.Cities;
+                Towns = mapObjects.Towns;
+                return;
+            }
+
             var globalMax = -9999f;
 
             Convolution2D(10, 0, tile => true, (tile, tile2, memo) =>
             {
-                if (tile2.Dummy()) return memo;
                 memo -= Math.Abs(tile2.AverageHeight() - tile.AverageHeight());
                 if (tile2.AverageHeight() < 0) memo += 1.5f;
                 memo -= Math.Abs(tile2.AverageHeight() - 5) / 10;
@@ -265,7 +283,6 @@ namespace Terrain
                 return tile.Color > globalMax - 5;
             }, (tile, tile2, memo) =>
             {
-                if (tile2.Dummy()) return memo;
                 if (tile2.Color > globalMax - 5 && tile != tile2)
                     memo += (float) (1f / (Math.Pow(tile2.X - tile.X, 2) + Math.Pow(tile2.Y - tile.Y, 2)));
                 return memo;
@@ -277,16 +294,14 @@ namespace Terrain
                 return true;
             });
 
-            Convolution2D(40, 0, tile => tile.Color2 > 0, (tile, tile2, memo) =>
-            {
-                if (tile2.Dummy()) return memo;
-                memo = Math.Max(memo, tile2.Color2);
-                return memo;
-            }, (tile, memo, count) =>
+            Convolution2D(40, 0,
+                tile => tile.Color2 > 0,
+                (tile, tile2, memo) => Math.Max(memo, tile2.Color2),
+                (tile, memo, count) =>
             {
                 if (Math.Abs(memo - tile.Color2) < Mathf.Epsilon)
                 {
-                    Cities.Add(new Vector2(tile.X, tile.Y));
+                    Cities.Add(new Point2 {X = tile.X, Y = tile.Y});
                 }
                 return true;
             });
@@ -294,11 +309,11 @@ namespace Terrain
             Convolution2D(10, 0, tile =>
             {
                 tile.Color2 = 0;
-                return tile.Color > globalMax - 20 && (int) tile.Color3 == 0;
+                return tile.Color > globalMax - 40 && (int) tile.Color3 == 0;
             }, (tile, tile2, memo) =>
             {
                 if (tile2.Dummy()) return memo;
-                if (tile2.Color > globalMax - 20 && tile != tile2 && (int) tile.Color3 == 0)
+                if (tile2.Color > globalMax - 40 && tile != tile2 && (int) tile.Color3 == 0)
                     memo += (float) (1f / (Math.Pow(tile2.X - tile.X, 2) + Math.Pow(tile2.Y - tile.Y, 2)));
                 return memo;
             }, (tile, memo, count) =>
@@ -307,7 +322,7 @@ namespace Terrain
                 return true;
             });
 
-            Convolution2D(10, 0, tile => tile.Color2 > 20, (tile, tile2, memo) =>
+            Convolution2D(20, 0, tile => tile.Color2 > 20, (tile, tile2, memo) =>
             {
                 if (tile2.Dummy()) return memo;
                 memo = Math.Max(memo, tile2.Color2);
@@ -316,10 +331,22 @@ namespace Terrain
             {
                 if (Math.Abs(memo - tile.Color2) < Mathf.Epsilon)
                 {
-                    Towns.Add(new Vector2(tile.X, tile.Y));
+                    Towns.Add(new Point2 {X = tile.X, Y = tile.Y});
                 }
                 return true;
             });
+
+            var mapData = new MapObjects
+            {
+                Cities = Cities,
+                Towns = Towns
+            };
+
+            var serializer = new Serializer();
+            Debug.Log(Application.persistentDataPath);
+            var writer = new StreamWriter(saveFileName);
+            serializer.Serialize(writer, mapData);
+            writer.Close();
         }
 
         private void SaveHeightMap()
@@ -357,4 +384,18 @@ namespace Terrain
             File.WriteAllBytes(Application.dataPath + "/../HeightMaps/" + heightMapName + "-Full.png", bytesFull);
         }
     }
+}
+
+public class Point2
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+}
+
+public class MapObjects
+{
+    public static decimal Version = 0.1m;
+
+    public List<Point2> Cities { get; set; }
+    public List<Point2> Towns { get; set; }
 }
