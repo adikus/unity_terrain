@@ -392,6 +392,13 @@ public class Point2
     public int Y { get; set; }
 }
 
+public class Point3
+{
+    public int X { get; set; }
+    public int Y { get; set; }
+    public float Z { get; set; }
+}
+
 public class MapObjects
 {
     public static decimal Version = 0.1m;

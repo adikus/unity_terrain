@@ -26,8 +26,8 @@ public class TerrainGeneration : MonoBehaviour
 
     public void Awake()
     {
-        const int width = 500;
-        const int height = 500;
+        const int width = 200;
+        const int height = 200;
         const int landPercentage = 90;
         const string seed = "Test Seed 1";
 
@@ -84,6 +84,9 @@ public class TerrainGeneration : MonoBehaviour
             var townObject = Instantiate(TownPrefab);
             townObject.transform.position = Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y);
         }
+
+        var pathController = GameObject.Find("PathController").GetComponent<PathController>();
+        pathController.Test();
     }
 
     private void UpdateTerrain(GameObject terrainObject, int x1, int x2, int y1, int y2)
