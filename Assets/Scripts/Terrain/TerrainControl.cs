@@ -22,7 +22,7 @@ namespace Assets.Scripts.Terrain
 
         public TerrainControl()
         {
-            var map = GameControl.Control.Map;
+            var map = GameControl.Map;
 
             var waterPlane = GameObject.Find("WaterProDaytime");
             var terrainPrefab = (GameObject) Resources.Load("prefabs/Terrain", typeof(GameObject));
@@ -74,7 +74,7 @@ namespace Assets.Scripts.Terrain
                 townObject.transform.position = Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y);
             }
 
-            GameControl.Control.Paths.Test();
+            GameControl.Paths.Test();
         }
 
         private void UpdateTerrain(GameObject terrainObject, int x1, int x2, int y1, int y2)
@@ -92,7 +92,7 @@ namespace Assets.Scripts.Terrain
             {
                 for (var j = y1; j <= y2; j++)
                 {
-                    var tile = GameControl.Control.Map.Tiles[i, j];
+                    var tile = GameControl.Map.Tiles[i, j];
 
                     vertices.AddRange(tile.Vertices.Select(v => v + Offset));
                     uvs.AddRange(tile.UVs);
@@ -130,7 +130,7 @@ namespace Assets.Scripts.Terrain
 
         public void SetTileHeights(Tile tile, float nw, float ne, float sw, float se)
         {
-            var map = GameControl.Control.Map;
+            var map = GameControl.Map;
 
             tile.UpdateHeights(nw, ne, sw, se, true);
 

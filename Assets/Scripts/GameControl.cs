@@ -5,11 +5,10 @@ namespace Assets.Scripts
     public class GameControl : MonoBehaviour
     {
         public static GameControl Control;
-
-        internal UI.UIControl UI;
-        internal Map.Map Map;
-        internal Terrain.TerrainControl Terrain;
-        internal Paths.Paths Paths;
+        public static Map.Map Map;
+        public static UI.UIControl UI;
+        public static Terrain.TerrainControl Terrain;
+        public static Paths.Paths Paths;
 
         //Config
         public int Width;
@@ -21,6 +20,7 @@ namespace Assets.Scripts
         private void Start () {
             if (Control == null)
             {
+                Application.runInBackground = true;
                 DontDestroyOnLoad(Control);
                 Control = this;
                 Initialize();
@@ -37,6 +37,7 @@ namespace Assets.Scripts
             Paths = GetComponent<Paths.Paths>();
 
             Map = new Map.Map(Width, Height, LandPercentage, Seed);
+            Map.Initialize();
             Terrain = new Terrain.TerrainControl();
         }
     }

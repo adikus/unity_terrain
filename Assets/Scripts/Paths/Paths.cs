@@ -32,7 +32,7 @@ namespace Assets.Scripts.Paths
 
             if (Heap.Count > 0)
             {
-                GameControl.Control.UI.DebugLines[2] = "Cost: " + (int) CostEstimate(Heap.First().Value);
+                GameControl.UI.DebugLines[2] = "Cost: " + (int) CostEstimate(Heap.First().Value);
             } else if (Jobs.Count > 0)
             {
                 StartNextJob();
@@ -160,7 +160,7 @@ namespace Assets.Scripts.Paths
             Jobs = new Queue<PathingJob>();
 
             // Get Minimum spanning tree
-            var minEdges = new Point2<int>[GameControl.Control.Map.Cities.Count];
+            var minEdges = new Point2<int>[GameControl.Map.Cities.Count];
             var unconnectedVertices = new Dictionary<int, float>();
             var forestEdges = new List<Point2<int>>();
 
@@ -185,8 +185,8 @@ namespace Assets.Scripts.Paths
                 var min = float.MaxValue;
                 foreach (var key in new List<int> (unconnectedVertices.Keys))
                 {
-                    var cityA = GameControl.Control.Map.Cities[node];
-                    var cityB = GameControl.Control.Map.Cities[key];
+                    var cityA = GameControl.Map.Cities[node];
+                    var cityB = GameControl.Map.Cities[key];
                     var cost = Math.Sqrt(Math.Pow(cityA.X - cityB.X, 2) + Math.Pow(cityA.Y - cityB.Y, 2));
                     if (cost < unconnectedVertices[key])
                     {
@@ -203,10 +203,10 @@ namespace Assets.Scripts.Paths
 
             foreach (var edge in forestEdges)
             {
-                var cityA = GameControl.Control.Map.Cities[edge.X];
-                var cityB = GameControl.Control.Map.Cities[edge.Y];
-                var startTile = GameControl.Control.Map.GetTile(cityA.X, cityA.Y);
-                var goalTile = GameControl.Control.Map.GetTile(cityB.X, cityB.Y);
+                var cityA = GameControl.Map.Cities[edge.X];
+                var cityB = GameControl.Map.Cities[edge.Y];
+                var startTile = GameControl.Map.GetTile(cityA.X, cityA.Y);
+                var goalTile = GameControl.Map.GetTile(cityB.X, cityB.Y);
                 var start = new Point3<int, float> { X = startTile.X, Y = startTile.Y, Z = startTile.AverageHeight() };
                 var goal = new Point3<int, float> { X = goalTile.X, Y = goalTile.Y, Z = goalTile.AverageHeight() };
                 var job = new PathingJob { Goal = goal, Start = start, Mode = 0 };
@@ -240,7 +240,7 @@ namespace Assets.Scripts.Paths
                 }
             }
 
-            GameControl.Control.UI.DebugLines[1] = "Current job: From " + job.Start.X + "," + job.Start.Y + "," +
+            GameControl.UI.DebugLines[1] = "Current job: From " + job.Start.X + "," + job.Start.Y + "," +
                                                    job.Start.Z + " To " + job.Goal.X + "," + job.Goal.Y + "," +
                                                    job.Start.Z + " ; Mode " + job.Mode;
             Debug.Log("Starting Pathing Job From "+job.Start.X+","+job.Start.Y+","+job.Start.Z+" To "+job.Goal.X+","+job.Goal.Y+","+job.Start.Z+" ; Mode " + job.Mode);
@@ -287,8 +287,8 @@ namespace Assets.Scripts.Paths
                     var secondIndex = Math.Min((int) Math.Ceiling((float) path.Count / count * n), path.Count - 1);
                     var secondPart = path[secondIndex];
 
-                    var startTile = GameControl.Control.Map.GetTile(firstPart.X, firstPart.Y);
-                    var goalTile = GameControl.Control.Map.GetTile(secondPart.EndX, secondPart.EndY);
+                    var startTile = GameControl.Map.GetTile(firstPart.X, firstPart.Y);
+                    var goalTile = GameControl.Map.GetTile(secondPart.EndX, secondPart.EndY);
                     var startZ = Mode == 1 && startTile.AverageHeight() < 0 ? 1 : startTile.AverageHeight();
                     var goalZ = Mode == 1 && goalTile.AverageHeight() < 0 ? 1 : goalTile.AverageHeight();
                     var start = new Point3<int, float> { X = startTile.X, Y = startTile.Y, Z = startZ };
@@ -373,7 +373,7 @@ namespace Assets.Scripts.Paths
             Y = y;
             if (z == null)
             {
-                var map = GameControl.Control.Map;
+                var map = GameControl.Map;
                 var tile = map.GetTile(X, Y);
                 Z = tile.AverageHeight();
             }
@@ -439,7 +439,7 @@ namespace Assets.Scripts.Paths
 
             var cubeOffset = new Vector3(0.5f, 0.125f, 0.5f);
 
-            _object.transform.position = GameControl.Control.Terrain.Offset + cubeOffset + new Vector3(X, Z/2, Y);
+            _object.transform.position = GameControl.Terrain.Offset + cubeOffset + new Vector3(X, Z/2, Y);
             _object.transform.Rotate(Vector3.up, Direction);
 
             //var cost = (_pathController.CostEstimate(this) + Cost) % 50 / 50;
@@ -461,7 +461,7 @@ namespace Assets.Scripts.Paths
 
         public bool IsPossible()
         {
-            var map = GameControl.Control.Map;
+            var map = GameControl.Map;
             var endTile = map.GetTile(EndX, EndY);
             if (endTile.Dummy()) return false;
             if (Z < -10) return false;
@@ -486,7 +486,7 @@ namespace Assets.Scripts.Paths
 
         public float PartCost()
         {
-            var map = GameControl.Control.Map;
+            var map = GameControl.Map;
             var tile = map.GetTile(X, Y);
             var endTile = map.GetTile(EndX, EndY);
             var baseCost = GetTypeBaseCost();
