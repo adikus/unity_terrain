@@ -60,14 +60,14 @@ namespace Assets.Scripts.Terrain
 
             var cubeOffset = new Vector3(0.5f, 0.5f, 0.5f);
 
-            foreach (var city in map.Cities)
+            foreach (var city in map.Objects.Cities)
             {
                 var tile = map.GetTile(city.X, city.Y);
                 var cityObject = Object.Instantiate(cityPrefab);
                 cityObject.transform.position = Offset + cubeOffset + new Vector3(city.X, tile.AverageHeight()/2, city.Y);
             }
 
-            foreach (var town in map.Towns)
+            foreach (var town in map.Objects.Towns)
             {
                 var tile = map.GetTile(town.X, town.Y);
                 var townObject = Object.Instantiate(townPrefab);

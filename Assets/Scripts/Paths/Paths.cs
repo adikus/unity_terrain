@@ -160,7 +160,7 @@ namespace Assets.Scripts.Paths
             Jobs = new Queue<PathingJob>();
 
             // Get Minimum spanning tree
-            var minEdges = new Point2<int>[GameControl.Map.Cities.Count];
+            var minEdges = new Point2<int>[GameControl.Map.Objects.Cities.Count];
             var unconnectedVertices = new Dictionary<int, float>();
             var forestEdges = new List<Point2<int>>();
 
@@ -185,8 +185,8 @@ namespace Assets.Scripts.Paths
                 var min = float.MaxValue;
                 foreach (var key in new List<int> (unconnectedVertices.Keys))
                 {
-                    var cityA = GameControl.Map.Cities[node];
-                    var cityB = GameControl.Map.Cities[key];
+                    var cityA = GameControl.Map.Objects.Cities[node];
+                    var cityB = GameControl.Map.Objects.Cities[key];
                     var cost = Math.Sqrt(Math.Pow(cityA.X - cityB.X, 2) + Math.Pow(cityA.Y - cityB.Y, 2));
                     if (cost < unconnectedVertices[key])
                     {
@@ -203,8 +203,8 @@ namespace Assets.Scripts.Paths
 
             foreach (var edge in forestEdges)
             {
-                var cityA = GameControl.Map.Cities[edge.X];
-                var cityB = GameControl.Map.Cities[edge.Y];
+                var cityA = GameControl.Map.Objects.Cities[edge.X];
+                var cityB = GameControl.Map.Objects.Cities[edge.Y];
                 var startTile = GameControl.Map.GetTile(cityA.X, cityA.Y);
                 var goalTile = GameControl.Map.GetTile(cityB.X, cityB.Y);
                 var start = new Point3<int, float> { X = startTile.X, Y = startTile.Y, Z = startTile.AverageHeight() };
