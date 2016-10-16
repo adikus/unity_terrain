@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Map;
+using Assets.Scripts.Paths;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -74,7 +75,7 @@ namespace Assets.Scripts.Terrain
                 townObject.transform.position = Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y);
             }
 
-            GameControl.Paths.Test();
+            SpanningTree.ConnectPlaces(GameControl.Map.Objects.Cities);
         }
 
         private void UpdateTerrain(GameObject terrainObject, int x1, int x2, int y1, int y2)
