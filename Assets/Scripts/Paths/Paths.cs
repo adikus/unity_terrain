@@ -14,10 +14,12 @@ namespace Assets.Scripts.Paths
 
         public Queue<PathingJob> Jobs;
         public PathingJob CurrentJob;
+        public PathAutoComplete AutoComplete;
 
         private void Awake()
         {
             Jobs = new Queue<PathingJob>();
+            AutoComplete = new PathAutoComplete();
 
             _straightPrefab = (GameObject) Resources.Load("prefabs/Paths/PathStraight", typeof(GameObject));
             _curve902Prefab = (GameObject) Resources.Load("prefabs/Paths/Path-90-2", typeof(GameObject));

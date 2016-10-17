@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Assets.Scripts.Paths.Elements
 {
@@ -19,9 +20,12 @@ namespace Assets.Scripts.Paths.Elements
 
         public float Cost { get; set; }
 
+        private List<GameObject> _objs;
+
         protected readonly PathingJob PathingJob;
 
         public IElement Previous { get; set; }
+        public IElement Next { get; set; }
 
         public Base(PathingJob pathingJob, IElement previous, Types type, int x, int y, float z, int direction)
         {
@@ -42,6 +46,9 @@ namespace Assets.Scripts.Paths.Elements
             EndZ = end.y;
             var angle = GetTypeAngle();
             EndDirection = Direction + angle;
+            if (EndDirection >= 360) EndDirection -= 360;
+
+            if (PathingJob == null) return;
 
             if (!PathingJob.Mode.MatchZ)
             {
@@ -51,6 +58,7 @@ namespace Assets.Scripts.Paths.Elements
             }
 
             Cost = (Previous != null ? Previous.Cost : 0) + PartCost();
+            if (Previous != null) Previous.Next = this;
         }
 
         public List<IElement> PossibleNext()
@@ -75,6 +83,11 @@ namespace Assets.Scripts.Paths.Elements
             return parts;
         }
 
+        public IElement AddPart(Types type, float z, bool mirrored)
+        {
+            return new Rail(PathingJob, this, type.GetSpecific(z, mirrored), EndX, EndY, EndZ, EndDirection);
+        }
+
         private Vector3 GetTypeVector()
         {
             return Type.PositionDiff;
@@ -92,6 +105,9 @@ namespace Assets.Scripts.Paths.Elements
 
         public void Show()
         {
+            if (_objs != null) return;
+            _objs = new List<GameObject>();
+
             var i = 0;
 
             var cubeOffset = new Vector3(0.5f, 0.125f, 0.5f);
@@ -104,8 +120,19 @@ namespace Assets.Scripts.Paths.Elements
                 obj.transform.position = GameControl.Terrain.Offset + cubeOffset + rotatedPosition + new Vector3(X, EndZ/2, Y);
                 obj.transform.Rotate(Vector3.up, angle + Direction);
                 obj.GetComponent<Renderer>().material.color = Color.red;
+                _objs.Add(obj);
                 i++;
             }
+        }
+
+        public void Hide()
+        {
+            if (_objs == null) return;
+            foreach (var obj in _objs)
+            {
+                Object.Destroy(obj);
+            }
+            _objs = null;
         }
 
         public bool IsPossible()

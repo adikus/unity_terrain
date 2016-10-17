@@ -16,6 +16,7 @@ namespace Assets.Scripts.Paths.Elements
         float Cost { get; set; }
 
         IElement Previous { get; set; }
+        IElement Next { get; set; }
         Types Type { get; set; }
 
         List<IElement> PossibleNext();
@@ -23,5 +24,7 @@ namespace Assets.Scripts.Paths.Elements
         void Show();
 
         string ToString();
+        IElement AddPart(Types type, float z, bool mirrored);
+        void Hide();
     }
 }

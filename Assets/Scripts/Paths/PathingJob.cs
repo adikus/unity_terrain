@@ -10,8 +10,12 @@ namespace Assets.Scripts.Paths
 {
     public class PathingJob
     {
+        public static int LastID = 0;
+
         public Point3<int, float> Start { get; set; }
         public Point3<int, float> Goal { get; set; }
+
+        public int ID;
 
         public int StartDirection { get; set; }
         public int GoalDirection { get; set; }
@@ -26,6 +30,9 @@ namespace Assets.Scripts.Paths
         public Stopwatch Timer;
         public int Counter;
 
+        private IElement _bestPath;
+        private float _bestCost;
+
         private class CostComparer : IComparer<float>
         {
             public int Compare(float i1, float i2)
@@ -39,6 +46,8 @@ namespace Assets.Scripts.Paths
             Heap = new SortedList<float, IElement>(new CostComparer());
             ClosedSet = new Dictionary<string, IElement>();
             Timer = new Stopwatch();
+
+            ID = ++LastID;
         }
 
         public void StartJob()
@@ -55,9 +64,9 @@ namespace Assets.Scripts.Paths
                 }
             }
 
-            GameControl.UI.DebugLines[1] = "Current job: From " + Start.X + "," + Start.Y + "," + Start.Z + " To " +
+            GameControl.UI.DebugLines[1] = "Current job: ID: " + ID + " From " + Start.X + "," + Start.Y + "," + Start.Z + " To " +
                                            Goal.X + "," + Goal.Y + "," + Goal.Z + " ; Mode " + Mode.ID;
-            Debug.Log("Starting Pathing Job From " + Start.X + "," + Start.Y + "," + Start.Z +
+            Debug.Log("Starting Pathing Job ID: " + ID + " From " + Start.X + "," + Start.Y + "," + Start.Z +
                       " To " + Goal.X + "," + Goal.Y + "," + Goal.Z + " ; Mode " + Mode.ID);
 
             Timer.Start();
@@ -69,6 +78,8 @@ namespace Assets.Scripts.Paths
             var estimate = CostEstimate(part);
             Heap.Add(estimate + part.Cost, part);
             MaxEstimate = estimate * 5;
+            _bestCost = estimate;
+            _bestPath = part;
 
             if (Mode.ID == 0 && estimate < 40)
             {
@@ -86,26 +97,42 @@ namespace Assets.Scripts.Paths
         {
             if (Heap.Count == 0)
             {
-                Fail();
+                if (!Autocomplete()) Fail();
                 return;
             }
 
             Counter++;
             var current = Heap.First();
-            if (current.Key > MaxEstimate)
-            {
-                Fail();
-                if (Mode.ID < 2)
-                {
-                    GameControl.Paths.CurrentJob = new PathingJob { Goal = Goal, Start = Start, Mode = PathingMode.Modes[Mode.ID + 1], StartDirection = StartDirection, GoalDirection = GoalDirection };
-                }
-                return;
-            }
+//            if (current.Key > MaxEstimate)
+//            {
+//                Fail();
+//                if (Mode.ID < 2)
+//                {
+//                    GameControl.Paths.CurrentJob = new PathingJob { Goal = Goal, Start = Start, Mode = PathingMode.Modes[Mode.ID + 1], StartDirection = StartDirection, GoalDirection = GoalDirection };
+//                }
+//                return;
+//            }
 
             if (CheckGoalReached(current.Value))
             {
                 Finish(current.Value);
                 return;
+            }
+
+            var currentEstimate = CostEstimate(current.Value);
+            if (currentEstimate < _bestCost)
+            {
+                _bestCost = currentEstimate;
+                _bestPath = current.Value;
+            }
+
+//            if (Timer.ElapsedMilliseconds > 2000 && currentEstimate < MaxEstimate/20)
+//            {
+//                if (Autocomplete()) return;
+//            }
+            else if (Timer.ElapsedMilliseconds > 5000)
+            {
+                if( Autocomplete() ) return;
             }
 
             Heap.RemoveAt(0);
@@ -119,6 +146,23 @@ namespace Assets.Scripts.Paths
                 var cost = CostEstimate(part) + part.Cost;
                 Heap.Add(cost, part);
             }
+        }
+
+        private bool Autocomplete()
+        {
+            Debug.Log("Autocomplete Job ID: " + ID + " Time: " + Timer.ElapsedMilliseconds);
+            var autocomplete = GameControl.Paths.AutoComplete;
+            autocomplete.SetStartPosition(_bestPath);
+            autocomplete.SetGoalPosition(Goal, GoalDirection);
+            var part = autocomplete.Autocomplete();
+            if (part != null && CheckGoalReached(part))
+            {
+                Finish(part);
+                return true;
+            }
+            _bestCost = MaxEstimate;
+            _bestPath = Heap.First().Value;
+            return false;
         }
 
         private bool CheckClosedSet(IElement part)
@@ -139,7 +183,7 @@ namespace Assets.Scripts.Paths
 
         private void Finish(IElement finalPart)
         {
-            Debug.Log("Job finished");
+            Debug.Log("Job ID: " + ID + " finished Time: " + Timer.ElapsedMilliseconds);
             Done = true;
             Success = true;
 
@@ -154,7 +198,6 @@ namespace Assets.Scripts.Paths
 
             path.Reverse();
 
-            Debug.Log("Path: " + Timer.ElapsedMilliseconds);
             Timer.Reset();
 
             if (Mode.ID <= 2)
@@ -190,14 +233,14 @@ namespace Assets.Scripts.Paths
 
         private void Fail()
         {
-            Debug.Log("Job failed");
+            Debug.Log("Job ID: " + ID + " failed Time: " + Timer.ElapsedMilliseconds);
             Done = true;
             Success = false;
         }
 
         private bool CheckGoalReached(IElement part)
         {
-            if (Mode.MatchZ && Math.Abs(part.EndZ - Goal.Z) > 0.5f) return false;
+            if (Mode.MatchZ && Math.Abs(part.EndZ - Goal.Z) > 0.2f) return false;
             if (Mode.UseGoalDirection && part.EndDirection != GoalDirection) return false;
             return part.EndX == Goal.X && part.EndY == Goal.Y;
         }

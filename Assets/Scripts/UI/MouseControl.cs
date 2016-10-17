@@ -26,11 +26,32 @@ namespace Assets.Scripts.UI
 
             UpdateOverlayMesh(tile);
 
+//            if (Input.GetKeyDown(KeyCode.N))
+//            {
+//                GameControl.Paths.AutoComplete.Angle += 90;
+//                if (GameControl.Paths.AutoComplete.Angle > 270) GameControl.Paths.AutoComplete.Angle = 0;
+//                GameControl.UI.DebugLines[6] = "Angle: " + GameControl.Paths.AutoComplete.Angle + " DA: " + GameControl.Paths.AutoComplete.DA;
+//            }
+//
+//            if (Input.GetKeyDown(KeyCode.M))
+//            {
+//                GameControl.Paths.AutoComplete.DA += 90;
+//                if (GameControl.Paths.AutoComplete.DA > 180) GameControl.Paths.AutoComplete.DA = -90;
+//                GameControl.UI.DebugLines[6] = "Angle: " + GameControl.Paths.AutoComplete.Angle + " DA: " + GameControl.Paths.AutoComplete.DA;
+//            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                //GameControl.Paths.AutoComplete.SetStartPosition(tile);
+            }
+
             if (Input.GetMouseButtonDown(1))
             {
-                var heightList = new List<float>(new [] { tile.NW.y, tile.NE.y, tile.SW.y, tile.SE.y }) ;
-                var min = heightList.Min();
-                GameControl.Terrain.SetTileHeights(tile, min, min, min, min);
+                //GameControl.Paths.AutoComplete.SetGoalPosition(tile);
+
+//                var heightList = new List<float>(new [] { tile.NW.y, tile.NE.y, tile.SW.y, tile.SE.y }) ;
+//                var min = heightList.Min();
+//                GameControl.Terrain.SetTileHeights(tile, min, min, min, min);
             }
         }
 
