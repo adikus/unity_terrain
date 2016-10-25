@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.Map;
+using Assets.Scripts.Map.Utils;
 using Assets.Scripts.Paths;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -11,6 +12,7 @@ namespace Assets.Scripts.Terrain
     public class TerrainControl
     {
         public Vector3 Offset;
+        public float Scale = 10;
 
         public int XChunks;
         public int YChunks;
@@ -30,7 +32,13 @@ namespace Assets.Scripts.Terrain
             var cityPrefab = (GameObject) Resources.Load("prefabs/TempCityPrefab", typeof(GameObject));
             var townPrefab = (GameObject) Resources.Load("prefabs/TempTownPrefab", typeof(GameObject));
 
-            waterPlane.transform.localScale = new Vector3((float) map.Width / 10, 1, (float) map.Height / 10);
+            waterPlane.transform.localScale = Scale * new Vector3((float) map.Width / 10, 1, (float) map.Height / 10);
+            QualitySettings.shadowDistance = Scale * 5000;
+            Camera.main.orthographicSize = 20 * Scale;
+            Camera.main.farClipPlane = 2000 * Scale;
+            Camera.main.transform.position = Scale * new Vector3(900, 500, 900);
+            waterPlane.GetComponent<Renderer>().material.SetFloat("_WaveScale", 0.02f / Scale);
+            waterPlane.GetComponent<Renderer>().material.SetColor("WaveSpeed", new Color(18 * Scale, 9 * Scale, -16 * Scale, -7 * Scale));
 
             _texture = new TileTexture(64, map.Colors);
 
@@ -50,11 +58,13 @@ namespace Assets.Scripts.Terrain
                 for (var j = 0; j < map.Height; j += ChunkSize)
                 {
                     var terrainObject = Object.Instantiate(terrainPrefab);
-                    _texture.AttachTextureTo(terrainObject.GetComponent<Renderer>().material);
+                    terrainObject.transform.localScale = terrainObject.transform.localScale * Scale;
                     _terrainObjects[TerrainIndex(i, j)] = terrainObject;
                     UpdateTerrain(terrainObject, i, Math.Min(i + ChunkSize - 1, map.Width - 1), j, Math.Min(j + ChunkSize - 1, map.Height - 1));
                 }
             }
+
+            _texture.AttachTextureTo(_terrainObjects[TerrainIndex(0, 0)].GetComponent<Renderer>().sharedMaterial);
             stopwatch.Stop();
             Debug.Log("UpdateTerrain: " + stopwatch.ElapsedMilliseconds + " ms");
             stopwatch.Reset();
@@ -65,17 +75,28 @@ namespace Assets.Scripts.Terrain
             {
                 var tile = map.GetTile(city.X, city.Y);
                 var cityObject = Object.Instantiate(cityPrefab);
-                cityObject.transform.position = Offset + cubeOffset + new Vector3(city.X, tile.AverageHeight()/2, city.Y);
+                cityObject.transform.localScale = cityObject.transform.localScale * Scale;
+                cityObject.transform.position = Scale * (Offset + cubeOffset + new Vector3(city.X, tile.AverageHeight()/2, city.Y));
             }
 
             foreach (var town in map.Objects.Towns)
             {
                 var tile = map.GetTile(town.X, town.Y);
                 var townObject = Object.Instantiate(townPrefab);
-                townObject.transform.position = Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y);
+                townObject.transform.localScale = townObject.transform.localScale * Scale;
+                townObject.transform.position = Scale * (Offset + cubeOffset + new Vector3(town.X, tile.AverageHeight()/2, town.Y));
             }
 
-            SpanningTree.ConnectPlaces(GameControl.Map.Objects.Cities);
+            var placeA = map.Objects.Cities[0];
+            var placeB = map.Objects.Cities[1];
+            var startTile = GameControl.Map.GetTile(placeA.X, placeA.Y);
+            var goalTile = GameControl.Map.GetTile(placeB.X, placeB.Y);
+            var start = new Point3<int, float> { X = startTile.X, Y = startTile.Y, Z = startTile.AverageHeight() };
+            var goal = new Point3<int, float> { X = goalTile.X, Y = goalTile.Y, Z = goalTile.AverageHeight() };
+            var job = new PathingJob { Goal = goal, Start = start, Mode = PathingMode.Modes[0] };
+            GameControl.Paths.Jobs.Enqueue(job);
+
+            //SpanningTree.ConnectPlaces(GameControl.Map.Objects.Cities);
         }
 
         private void UpdateTerrain(GameObject terrainObject, int x1, int x2, int y1, int y2)

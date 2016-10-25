@@ -36,6 +36,9 @@ namespace Assets.Scripts.Paths
             Start = Object.Instantiate(cityPrefab);
             Goal = Object.Instantiate(cityPrefab);
 
+            Start.transform.localScale = Start.transform.localScale * GameControl.Terrain.Scale;
+            Goal.transform.localScale = Goal.transform.localScale * GameControl.Terrain.Scale;
+
             Start.GetComponent<Renderer>().material.color = Color.green;
             Goal.GetComponent<Renderer>().material.color = Color.red;
         }
@@ -52,7 +55,7 @@ namespace Assets.Scripts.Paths
             StartPart = part;
             StartTile = tile;
             Angle = part.EndDirection - 90;
-            Start.transform.position = GameControl.Terrain.Offset + cubeOffset + new Vector3(part.EndX, part.EndZ/2, part.EndY);
+            Start.transform.position = GameControl.Terrain.Scale * (GameControl.Terrain.Offset + cubeOffset + new Vector3(part.EndX, part.EndZ/2, part.EndY));
             Start.transform.rotation = Quaternion.identity;
             Start.transform.Rotate(Vector3.up, Angle);
 
@@ -69,7 +72,7 @@ namespace Assets.Scripts.Paths
             DA = GoalDirection - StartPart.EndDirection;
             while (DA > 180) DA -= 360;
             while (DA < -90) DA += 360;
-            Goal.transform.position = GameControl.Terrain.Offset + cubeOffset + new Vector3(goal.X, goal.Z/2, goal.Y);
+            Goal.transform.position = GameControl.Terrain.Scale * (GameControl.Terrain.Offset + cubeOffset + new Vector3(goal.X, goal.Z/2, goal.Y));
             Goal.transform.rotation = Quaternion.identity;
             Goal.transform.Rotate(Vector3.up, Angle + DA);
 

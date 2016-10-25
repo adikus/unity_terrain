@@ -15,7 +15,7 @@ namespace Assets.Scripts.UI
         private GUIStyle _fpsStyle;
         private const string FPSFormat = "{0} FPS";
 
-        private void Awake ()
+        private void Start ()
         {
             DebugLines = new Dictionary<int, string>();
             _debugStyle = new GUIStyle

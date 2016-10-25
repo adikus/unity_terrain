@@ -115,9 +115,10 @@ namespace Assets.Scripts.Paths.Elements
             foreach (var position in Type.RenderPositions)
             {
                 var angle = Type.RenderDirections[i];
-                var obj = GameControl.Paths.InstantiateType(0);
+                var obj = Object.Instantiate(GameControl.Paths.StraightPrefab);
                 var rotatedPosition = Quaternion.AngleAxis(Direction, Vector3.up) * position;
-                obj.transform.position = GameControl.Terrain.Offset + cubeOffset + rotatedPosition + new Vector3(X, EndZ/2, Y);
+                obj.transform.localScale = obj.transform.localScale * GameControl.Terrain.Scale;
+                obj.transform.position = GameControl.Terrain.Scale * (GameControl.Terrain.Offset + cubeOffset + rotatedPosition + new Vector3(X, EndZ/2, Y));
                 obj.transform.Rotate(Vector3.up, angle + Direction);
                 obj.GetComponent<Renderer>().material.color = Color.red;
                 _objs.Add(obj);

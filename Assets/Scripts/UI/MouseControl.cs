@@ -15,6 +15,7 @@ namespace Assets.Scripts.UI
         {
             var terrainOverlayPrefab = (GameObject) Resources.Load("prefabs/TerrainOverlay", typeof(GameObject));
             _terrainOverlay = Object.Instantiate(terrainOverlayPrefab);
+            _terrainOverlay.transform.localScale = _terrainOverlay.transform.localScale * GameControl.Terrain.Scale;
         }
 
         public void Update()
@@ -61,10 +62,10 @@ namespace Assets.Scripts.UI
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit hit;
 
-            if (!Physics.Raycast(ray, out hit, 2000, layerMask)) return null;
-            var x = (int) (hit.point.x - GameControl.Terrain.Offset.x);
-            var y = (int) (hit.point.z - GameControl.Terrain.Offset.z);
-            return new Vector2(x, y);
+            if (!Physics.Raycast(ray, out hit, 2000 * GameControl.Terrain.Scale, layerMask)) return null;
+            var x = (int) (hit.point.x - GameControl.Terrain.Scale * GameControl.Terrain.Offset.x);
+            var y = (int) (hit.point.z - GameControl.Terrain.Scale * GameControl.Terrain.Offset.z);
+            return new Vector2(x / GameControl.Terrain.Scale, y / GameControl.Terrain.Scale);
         }
 
         internal Tile GetMouseTile()

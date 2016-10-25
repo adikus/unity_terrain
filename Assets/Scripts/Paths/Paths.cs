@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -9,8 +8,7 @@ namespace Assets.Scripts.Paths
 {
     public class Paths : MonoBehaviour {
 
-        private GameObject _straightPrefab;
-        private GameObject _curve902Prefab;
+        public GameObject StraightPrefab;
 
         public Queue<PathingJob> Jobs;
         public PathingJob CurrentJob;
@@ -19,10 +17,12 @@ namespace Assets.Scripts.Paths
         private void Awake()
         {
             Jobs = new Queue<PathingJob>();
-            AutoComplete = new PathAutoComplete();
+        }
 
-            _straightPrefab = (GameObject) Resources.Load("prefabs/Paths/PathStraight", typeof(GameObject));
-            _curve902Prefab = (GameObject) Resources.Load("prefabs/Paths/Path-90-2", typeof(GameObject));
+        private void Start()
+        {
+            StraightPrefab = (GameObject) Resources.Load("prefabs/Paths/PathStraight", typeof(GameObject));
+            AutoComplete = new PathAutoComplete();
         }
 
         private void Update ()
@@ -59,27 +59,6 @@ namespace Assets.Scripts.Paths
         {
             CurrentJob = Jobs.Dequeue();
             CurrentJob.StartJob();
-        }
-
-        public GameObject InstantiateType(int type)
-        {
-            switch (type)
-            {
-                case 0:
-                    return Instantiate(_straightPrefab);
-                case 1:
-                    return Instantiate(_curve902Prefab);
-                case 2:
-                    var part = Instantiate(_curve902Prefab);
-                    part.transform.localScale = Vector3.Scale(part.transform.localScale, new Vector3(1, 1, -1));
-                    return part;
-                case 3:
-                    return Instantiate(_curve902Prefab);
-                default:
-                    var part2 = Instantiate(_curve902Prefab);
-                    part2.transform.localScale = Vector3.Scale(part2.transform.localScale, new Vector3(1, 1, -1));
-                    return part2;
-            }
         }
     }
 }
