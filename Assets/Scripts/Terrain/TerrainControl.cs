@@ -130,7 +130,7 @@ namespace Assets.Scripts.Terrain
 
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
-            mesh.Optimize();
+            ;
 
             terrainObject.GetComponent<MeshCollider>().sharedMesh = mesh;
         }

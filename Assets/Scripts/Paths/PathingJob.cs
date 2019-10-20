@@ -240,7 +240,7 @@ namespace Assets.Scripts.Paths
 
         private bool CheckGoalReached(IElement part)
         {
-            if (Mode.MatchZ && Math.Abs(part.EndZ - Goal.Z) > 0.2f) return false;
+            if (Mode.MatchZ && Math.Abs(part.EndZ - Goal.Z) > 0.5f) return false;
             if (Mode.UseGoalDirection && part.EndDirection != GoalDirection) return false;
             return part.EndX == Goal.X && part.EndY == Goal.Y;
         }
